@@ -1,0 +1,1695 @@
+Devnets: 
+
+
+https://developer.cisco.com/learning/lab/dev-mac/step/10
+
+https://developer.cisco.com/video/net-prog-basics/01-programming_fundamentals
+https://github.com/CiscoDevNet/netprog_basics
+
+https://developer.cisco.com/video/net-prog-basics/00-intro
+
+
+
+https://acloudguru.com/
+Linux / Azure / 
+
+Username: linuxvlnp@gmail.com
+Passwd: Cisco@123
+
+
+Python Server: 
+Please use the following to access the server:
+* IP: 41.138.63.1
+* Credentials:
+    * User: root
+    * Pass: Py3Th0n$c4!pT
+* Port: 2222   (mapped to port 22 on the server)
+ 
+
+
+
+
+
+Ansible: 
+https://cisco.udemy.com/course/learn-ansible/learn/lecture/8297650#overview
+
+
+https://www.virtualbox.org/wiki/Downloads
+
+
+https://www.osboxes.org/centos/#centos-8-4-info
+
+https://sourceforge.net/projects/osboxes/
+
+
+++ Installed VM:
+
+Username: osboxes
+Password: osboxes.org
+Root Account Password: osboxes.org
+Guest Tools: Open-VM-Tools Installed
+Keyboard Layout: US (Qwerty)
+VMware Compatibility: Version 10+
+
+++ Able to login into VM: 192.168.0.108 from outside using SSH. 
+++ Cloned two more VM with new mac address and linked clone (to save memory). Name of all 3 VMs are: 
+centos-template
+ansible-controller (Cloned)
+ansible-target1 (Cloned)
+
+++ Changed hostname and hosts entry of cloned VM:
+sudo vi /etc/hostname
+sudo vi /etc/hosts
+shutdown now -r
+
+++ Installed ansbile on centos using below document
+$ sudo yum install epel-release
+$ sudo yum install ansible
+https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#installing-ansible-on-specific-operating-systems
+
+
+Learning:
+
+Inventory file is /etc/ansbile/hosts until unless we change it. 
+
+We can define group of servers such as Web, DB etc in inventory using below:
+web1	ansible_host=serrver1.company.com		ansible_connection=ssh	ansible_user=root ansible_ssh_pass=cisco1234
+web2	ansible_host=serrver2.company.com	ansible_connection=ssh	ansible_user=root ansible_ssh_pass=cisco1234
+db1		ansible_host=serrver3.company.com	ansible_connection=ssh	ansible_user=admin ansible_ssh_pass=cisco1234
+
+For windows, we use ansbile_connection=winrm and ansible_password
+
+[web]
+web1
+web2
+
+[DB]
+db1
+
+To create group of groups:
+[all_server:children]
+web
+DB
+
+
+============================================
+YAML:
+
+Yaml file can be .yml or .yaml extension:
+We can check YAML syntax and yamllint.com
+	
+Dictionary:
+employee:
+    name: john
+    gender: male
+    age: 24
+
+List / Array:
+- apple
+- apple
+- apple
+
+Sequence doesn’t matter in dictionary but matters in array / list. 
+List of dictionary: 
+
+-
+    name: apple
+    color: red
+    weight: 100g
+- 
+    name: apple
+    color: red
+    weight: 90g
+- 
+    name: mango
+    color: yellow
+    weight: 150g
+
+employees:
+-    name: pallavi
+     gender: female
+     age: 24
+-    name: atul
+     gender: male
+     age: 26
+
+
+Now try adding the pay information. Remember while address is a dictionary, payslips is an array of month and amount
+	
+employee:
+    name: john
+    gender: male
+    age: 24
+    address:
+        city: edison
+        state: 'new jersey'
+        country: 'united states'
+    payslips:
+    -
+        month: june
+        amount: 1400
+    -
+        month: july
+        amount: 2400
+    -
+        month: august
+        amount: 3400
+
+
+
+Ansible Playbooks: 
+We can run set of commands in this.
+All playbooks in YAML.
+Play defines set of activity
+	Task- Defines Action to be performed on host. 
+
+
+playbook.yml
+-
+	name: Play 1
+	hosts: localhost
+	tasks: 
+	  - name: Execute command ‘date’
+	     command: date
+	  - name: Execute script on server
+	     script: test_script.sh
+	  - name: Install httpd service
+	     yum
+		name: httpd
+		state: present			<<=== present is to install, absent is to uninstall, latest is to update to latest. 
+	  - name: Start web server
+	     service: 
+		name: httpd
+		state: started
+
+
+How to run playbook?
+ansible-playbook playbook.yml
+
+
+Two ways to run command from Ansible:
+
+One:
+ansible <host> -a <command>
+ansible all -a “/sbin/reboot”
+
+ansible <host> -m module
+ansible target1 -m ping
+
+Second way:
+ansible-playbook <playbook name>
+
+ansible-playbook playbook-pingtest.yaml -i inventory.txt
+
+
+Downloaded and installed Atom to make project and keep revisions.
+We can check YAML syntax and yamllint.com
+
+
+
+We used ATOM IO tool to copy folder and files to controller. Whatever change we did on our local repository, it reflected back to controller 
+Copied file from controller to two hosts. Files get copied only when it is updated or not present in remote host directory. 
+
+
+Modules: 
+Docs.ansible.com
+
+Idempotency: 
+An operation is idempotent if result of action performed repeatedly without intervention is equal to no action performed. 
+
+Exercises: 
+-
+    name: Execute a script on all web server nodes
+    hosts: web_nodes
+    tasks:
+        -   name: Execute a script on all web server nodes
+            script: /tmp/install_script.sh
+            
+ 
+Variables:
+
+When using variable alone then:  ‘{{var_name}}’
+When used in line then: string {{var_name}} string
+
+
+# Sample Inventory File
+localhost ansible_connection=localhost nameserver_ip=10.1.250.10
+
+
+-
+    name: 'Update nameserver entry into resolv.conf file on localhost'
+    hosts: localhost
+    tasks:
+        -
+            name: 'Update nameserver entry into resolv.conf file'
+            lineinfile:
+                path: /etc/resolv.conf
+                line: 'nameserver {{nameserver_ip}}'
+
+Another example:
+
+-
+    name: 'Update nameserver entry into resolv.conf file on localhost'
+    hosts: localhost
+    vars:
+        car_model: BMW M3
+        country_name: USA
+        title: Systems Engineer
+    tasks:
+        -
+            name: 'Print my car model'
+            command: 'echo "My car''s model is {{car_model}}"'
+        -
+            name: 'Print my country'
+            command: 'echo "I live in the {{country_name}}"'
+        -
+            name: 'Print my title'
+            command: 'echo "I work as a {{title}}"'
+            
+
+
+
+Conditional statements:
+Specify when statement in playbook which executes only when that condition is met. 
+
+We can use OR operator to define multiple condition.
+
+
+under tasks:
+yum: 
+	name: nginx
+	state: present
+when: 	ansible_os_family == “Redhat”	or
+	    	ansible_os_family == “SUSE”
+
+ 
+
+-
+    name: 'Execute a script on all web server nodes'
+    hosts: all_servers
+    tasks:
+        -
+            service: 'name=mysql state=started'
+            when: ansible_host == "server4.company.com"
+
+
+
+
+The playbook has a variable defined - age. The two tasks attempt to print if I am a child or an Adult. Use the when conditional to print if I am a child or an Adult based on weather my age is < 18 (child) or >= 18 (Adult).
+
+-
+    name: 'Am I an Adult or a Child?'
+    hosts: localhost
+    vars:
+        age: 25
+    tasks:
+        -
+            command: 'echo "I am a Child"'
+            when: age < 18
+        -
+            command: 'echo "I am an Adult"'
+            when: age >= 18
+            
+
+
+-
+    name: 'Add name server entry if not already entered'
+    hosts: localhost
+    tasks:
+        -
+            shell: 'cat /etc/resolv.conf'
+            register: command_output
+        -
+            shell: 'echo "nameserver 10.0.250.10" >> /etc/resolv.conf'
+            when: command_output.stdout.find('10.0.250.10') == -1
+            
+            
+
+
+Loops: 
+
+
+-
+	name: Create users
+	hosts: localhost
+	tasks: 
+		- user: name=joe1		state=present
+		- user: name=joe2		state=present
+		- user: name=joe3		state=present
+		- user: name=joe4		state=present
+		- user: name=joe5		state=present
+
+	
+
+-
+	name: Create users
+	hosts: localhost
+	tasks: 
+		- user: name=‘{{ item }}’		state=present
+		   loop: 
+				- joe1
+				- joe2
+				- joe3
+				- joe4
+				- joe5
+
+				
+In case we have to define user ID also, then pass array of dictionary where two keys will be used
+
+-
+	name: Create users
+	hosts: localhost
+	tasks: 
+		- user: name=‘{{ item.name }}’		state=present	uid=‘{{item.uid}}’
+		   loop: 
+				- name: joe1
+			 	    uid: 1010
+				- name: joe2
+			 	    uid: 1011
+				- name: joe3
+			 	    uid: 1012
+				- name: joe4
+			 	    uid: 1013
+				- name: joe5
+			 	    uid: 1014
+
+
+Above loop can be represented in Json format also. 
+
+loop: 
+	-	{ name: joe1, uid: 1010 }
+	-	{ name: joe2, uid: 1011 }
+	-	{ name: joe3, uid: 1012 }
+	-	{ name: joe4, uid: 1013 }
+	-	{ name: joe5, uid: 1014 }
+
+
+
+Another way of using loop (old way) is : With_*
+
+
+-
+	name: Create users
+	hosts: localhost
+	tasks: 
+		- user: name=‘{{ item }}’		state=present
+		   with_items: 
+				- joe1
+				- joe2
+				- joe3
+				- joe4
+				- joe5
+
+
+It is same as loop and no much difference. 
+For simple loop, it is recommended to use loop itself but in old playbook we might see with_
+
+Other examples: 
+with_file:
+with_url:
+with_mongodb
+
+Many lookup plugin can be seen after with_
+
+
+
+Exercise: 
+
+The playbook currently runs an echo command to print a fruit name. Apply a loop directive (with_items) to the task to print all fruits defined in the fruits variable.
+
+-
+    name: 'Print list of fruits'
+    hosts: localhost
+    vars:
+        fruits:
+            - Apple
+            - Banana
+            - Grapes
+            - Orange
+    tasks:
+        -
+            command: "echo\"{{item}}\""
+            with_items: "{{fruits}}"
+            
+
+
+
+
+Roles: 
+
+Set of playbooks which are common tasks. 
+It introduces set of best practices
+You can share code.
+Ansible Galaxy is place you can find many roles. 
+You can check any role if its present already
+
+- name: Install and Configure MYSQL
+	hosts: dbserver1…..dbserver100
+	roles: 
+		- mysql
+
+==========
+MySQL-Role
+tasks: 
+	- name: install pre-req
+	  yum: name=pre-req-packages state=present
+	- name: Install MySQL Packages
+	   yum: name=mysql state=present
+	- name: start MySQL Service
+	   service: name-mysql state=started
+	- name: Configure Database
+	   mysql_db: name=db1 state=present
+
+
+Commands: 
+ansible-galaxy install greenlingguy.mysql
+ansible-galaxy list
+ansible-config dump | grep ROLE
+
+
+
+
+===================================
+Python: 
+
+https://docs.python.org/3/library
+
+If you are unsure about the package name or if a certain package even exists, you can always browse through all the packages available directly on the https://pypi.org webpage.
+ pip install ———
+
+
+XML/ JSON are mainly used to exchange information like API. 
+YAML is being used in programs like Ansible
+
+RESTAPI:  Representational State Transfer Protocol
+There are four main methods that you can use.
+
+GET: Retrieves a specific resource or a collection of resources. The data is returned in either XML or JSON format, and it is considered idempotent. Idempotent means if you make multiple requests using the same method on the same resource, it will not change the resource multiple times. Therefore, you can use the GET method to retrieve the same resource multiple times, but it will not change the resource.
+POST: Creates a new resource. It is not considered idempotent, and if the request is processed ok, it will return a status code of “201.”
+DELETE: Removes a specific resource. It is not idempotent. If the resource is removed successfully, you will receive a status code of 200 in the response.
+PUT: Completely replaces a specific resource. It will not perform a partial update. Put is considered to be idempotent and will return a status code of “200” if the request is processed correctly.
+
+++ Use of IDE to manage folders and code. 
+
+Code Editors: 
+Visual Studio Code
+Notepad++
+Sublime Text
+Vim
+
+Integrated Development Engines:
+PyCharm
+IDLE
+Visual Studio
+Spyder
+
+Data Types: 
+Sequence: An ordered collection of similar or completely different data types. A sequence has three sub-data types: string, list, and tuple.
+Boolean: A value of True or False.
+Dictionary: An unordered collection of same or different data types, represented in a key: value pair.
+Numeric: A numeric value. Numeric has three sub-data types: integer, float, and complex. Complex numbers will not be covered in this section but are used to represent real and imaginary numbers.
+
+Immutable: Numbers, strings, and tuples are immutable (can’t be changed) 
+Mutable: possible to add, delete, insert, and rearrange items in a list or dictionary
+
+Int can be written as 23_233 but “,” can’t be used otherwise it will become tuple. 
+
+List: [“a”,”y”,”z”,”y”,1,5] 
+Mutable means you can remove of add items, ordered, can be indexed, are dynamic. 
+Tuple: (“a”,”y”,”z”,”y”,1,5) For permanent list which can’t be edited later, ordered, indexed. 
+Sets: {“a”,”y”,”z”,”y”,1,5}	  Can not contain duplicates, mutable, unordered, unindexed, dynamic (means can edit during runtime). 
+Two Types: Union (to club two sets and remove duplicates) and Instersection (to find out duplicates)
+Dictionary:  {“Router”: “Cisco”, “Switch”: “Juniper”, “Firewall”: “Zscalar”}
+Mutable key-value paired, use curly brackets, Keys can be any immutable objects, values can be any object, dynamic, ordered after 3.7
+Nested:  putting lists or dictionaries inside another list or dictionary. = [["router1", "router2", "router3"], "sw1":{"model": "3850", "os": "IOS-XE"}]
+
+
+String Manipulation: 
+
+Methods to manipulate strings include the following:
+capitalize(): Returns a copy of the original string and converts the string’s first character to an uppercase letter while making all other characters in the string lowercase letters. If the first character is a number, no letters will be capitalized. The command is str.capitalize().
+title(): Converts the first character in each word to uppercase, the remaining characters to lowercase, and returns a new string. If the first character of a word is a number, the next letter will be changed to uppercase. The command is str.title().
+upper(): Converts the given string into uppercase and returns the string. The command is str.upper().
+lower(): Converts the given string into lowercase and returns the string. The command is str.lower().
+swapcase(): Converts all uppercase characters to lowercase, all lowercase letters to uppercase, and returns the string.
+
+String Split:  str.split(separator, maxsplit)
+>>> router = " Cisco 3800 IOS-XE"
+>>> router.split()
+['Cisco', '3800', 'IOS-XE']
+Can be defined how many times we need to split. 
+
+Two ways to see all options: 
+dir(str) 
+help(str) 
+
+
+Modifying Strings: 
+>>> hostname = "hostname Router1"
+>>> hostname[9:]
+'Router1'
+>>> hostname[9:15]
+'Router'
+>>> ip
+'192.168.1.2'
+>>> ip[4:7]
+'168'
+To get every second string:
+>>> ip = "192.168.5.5"
+>>> ip[0:11:2]
+'121855'
+
+
+Concatenation: Only strings can be concatenated.
+>>> "192.168.5.5 " + "255.255.255.0"
+'192.168.5.5 255.255.255.0'
+
+>>> ip = "192.168.5.5"
+>>> ip + " 255.255.255.0"
+'192.168.5.5 255.255.255.0'
+
+Whitepace Stripping: 
+strip() method removes whitespace from the beginning and end of a string.
+>>> ip = "     192.168.5.5     "
+>>> ipnew = ip.strip()
+"192.168.5.5"
+
+lstrip() method removes whitespace from the beginning of the string.
+rstrip() method removes whitespace from the end of the string.
+
+Formatting and Templating: 
+Formatting
+>>> x = 'router1'
+>>> y = '1.1.1.1'
+>>> z = '/24'
+>>> "Router name is {0}, with ip {1} and subnet {2}".format(x, y, z)
+'Router name is router1, with ip 1.1.1.1 and subnet /24'
+
+>>> "|{0:^20}| {1:^20}| {2:^20}|".format(x, y, z)
+'|      router2       |       1.1.1.1       |         /24         |'
+
+FString: 3.6+ version
+>>> f"Router name is {x}, with ip {y} and subnet {z}"
+'Router name is router2, with ip 1.1.1.1 and subnet /24'
+
+>>> f"Router name is {x:^20}, with ip {y:^20} and subnet {z:^20}"
+'Router name is       router2       , with ip       1.1.1.1        and subnet         /24         '
+
+Templating: 
+>>> from string import Template
+>>> x = Template("The model of $device is $model with os $os")
+>>> x.substitute(device = "router1", model = "3800", os="IOS-XE")
+'The model of router1 is 3800 with os IOS-XE'
+
+
+Escape Characters:      
+\n: for next line. 
+\t: for tab.
+\b for backspace
+\\ to use \  
+
+      
+Regex: 
+import re 
+pattern = 'GigabitEthernet[1-4]'
+interface = 'This interface is GigabitEthernet3'
+result = re.search(pattern, interface)
+print(result)
+MacBook-Pro:Python atchoudh$ python3 Regex-practice.py 
+<re.Match object; span=(18, 34), match='GigabitEthernet3'>
+
+Square Brackets [ ]: Match any character within the brackets.
+[abc] – Matches any character a, b, or c
+[a-z] – Matches any lowercase character a through z
+[a-zA-Z] – Matches any character lower or uppercase a through z
+[168] – Matches any digit 1, 6, or 8
+[0-9] – Matches any digit 0 through 9
+[1-9][0-9] – Matches any digit 10 through 99
+[^trs] – Does not match any of the characters that follow the carat inside the brackets
+
+Period (.): Matches any character besides a new line character.
+'P..E' – Matches 'PRNE', 'PrnE', or 'PopE'
+
+Carat (^): Matches strings that start with the characters following the carat.
+'^PRNE' – String must start with 'PRNE'
+
+Dollar sign ($): Matches strings that end with the characters preceding the dollar sign.
+'class$' – String must end with 'class'
+
+Star (*): Matches zero or more occurrences of the specified value(s).
+[0-9]* – String can have 0 through 9 zero or more times. The string 'Router1' would match because of the ‘1’.
+Plus (+): Matches one or more occurrences of the given value(s).
+[a-zA-Z]+ – The string can have a lowercase or uppercase a through z one or more times. The string '192.168' would not find a match but 'PRNE' would match.
+Question mark (?): Matches zero or one occurrence of the given value(s).
+[1-9]? – This would match the string 'Router1' and 'Router'.
+Curly brackets ({}): Matches a specified number of occurrences of the value(s).
+
+data = 'abc123cba321'
+pattern = '[abc][123]'
+result = re.findall(pattern, data)
+['c1', 'a3']
+
+data = 'abc123cba321'
+pattern = '[abc][123]'
+result = re.split(pattern, data)
+['ab', '23cb', '21']
+
+Regex to match valid IP address: (?:(?:25[0-5]|2[0-4][0-9]|1?[0-9]?[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1?[0-9]?[0-9])
+
+
+String Methods: 
+The count() method counts how many time a substring of characters appears in the original string. The following are parameters for this method: str.count(sub, start, end).
+>>> x = '123 123 123 123'
+>>> x.count("1")
+4
+>>> x.count("1",4,10) ==>  4 and 10 are start and end indexes respectively.
+2
+
+The find() method finds a substring of characters and returns the first index where the substring is seen. The following are parameters for this method: str.find(sub, start,end).	
+>>> x = "123 123 123 123"
+>>> x.find("123", 5, 7)
+4
+
+The startswith() method takes a prefix of characters and returns the Boolean True or False if the string starts with that prefix. The following are parameters that you can use with this method: str.find(prefix, start,end)
+ ip = ["192.168.5.5" , "1.1.1.1" , "2.2.2.2" ]
+>>> ip[0].startswith("192")
+True
+>>> ip[1].startswith("192")
+
+
+PEP: Python Enhancement Proposal (PEP) 8: 
+
+* Maximum Line Length: Limit all lines to a maximum of 79 characters.
+* Line Break: Place line breaks before a binary operator. For decades, the recommended style was for a line break to be after the operator, but this was modified for readability purposes.
+* Blank Lines: Surround top-level function and class definitions with two blank lines. A single blank line surrounds method definitions inside a class.
+* Imports: List imports at the top of a file, with each import on a separate line.
+* Naming: Write variable and function names in lowercase, with an underscore separating each word. In some fonts, characters are indistinguishable from the numerals one and zero. Never use the following characters as single-character variable names:
+    * 		'l' (lowercase letter el)
+    * 		'O' (uppercase letter oh)
+    * 		'I' (uppercase letter eye)
+* Tab or Spaces: Use spaces. Only use tabs when you are trying to be consistent with prewritten code. Python 3 does not allow you to mix tabs and spaces. (Always use 4 spaces for indentation).
+
+You can use pycodestyle XYZ.py to check if your code matches PEP8 standards. Installation is required. Most of IDE uses PEP8. 
+
+
+Conditionals: 
+if elif else
+x = 4
+y = 5
+
+if x==1:
+    print("x is True")
+elif y==2: 
+    print("y is True")
+else:
+    print("Both are false,sachiii!!!!!")
+
+
+Operators: 
+Arithmatic:   +, -, /, *, **(expoential), % (remainder), //(smallest whole number after division)
+Comparison:    ==, !=, > , <, <=, >=
+
+Logical Operators: 
+x = 4
+x > 3 and x > 6
+False
+x > 3 or x > 6
+True
+not(x > 3 or x > 6)
+False
+
+Identity operators: 
+Identity operators check to see if two values are located in the same part of memory.
+>>> x = ["router1", "router2"]
+>>> y = ["router1", "router2"]
+>>> z = x
+>>> x is z
+True
+>>> y is z
+False
+>>> y is not z
+True
+>>> x is not z
+False
+
+Membership Operators: 
+Membership operators check to see if a variable or value is found in a string, list, tuple, set, or dictionary.
+>>> x = ["router1", "router2"]
+>>> y = ["router1", "router2"]
+>>> "router1" in x
+True
+>>> "router" not in x
+True
+>>> "router" in x
+False
+
+current_version = 1
+print(current_version if current_version > 2 else 0)
+0 
+
+
+Loop: 
+for <var> in <iterable>:
+>>> for i in "string":
+>>>    print(i) 
+
+while loop
+>>> i = 4
+>>> while i > 0:
+>>>    print(f'The value of i is {i}')
+>>>    i -= 1
+
+devices = {"device": "router1", "model": 3800, "os": "IOS-XE" }
+for device in devices.keys():
+    print (device)
+sjc-vpn1-281:Python atchoudh$ python3 Practice.py 
+device
+model
+os
+
+We can use method keys(), values() or items() here.
+
+for i in range(1,5):
+    print("router" + str(i))
+
+devices = ["Router", "Router1", "Router2", "Router3", "Router4"]
+for i in range(0, len(devices)):
+    if devices[i] == "Router2":
+        print(f'This {i} is in desired list')
+        break 
+    else:
+        print(f'{devices[i]} is not in desired list')
+sjc-vpn1-281:Python atchoudh$ python3 Practice.py 
+Router is not in desired list
+Router1 is not in desired list
+This 2 is in desired list
+
+
+for i in range(0, len(devices)):
+    if devices[i] == "Router2":
+        continue
+    print(devices[i])
+sjc-vpn1-281:Python atchoudh$ python3 Practice.py 
+Router
+Router1
+Router3
+Router4
+
+
+
+6.2 Exploring Classes, Methods, Functions, Namespaces, and Scopes
+DRY: Don’t repeat yourself and 
+Cisco DevNet Code Exchange is an online, curated set of code repositories related to all Cisco technology areas on public GitHub. 
+
+Object: Python is an object-oriented programming language. Everything is in Python treated as an object, including variable, function, list, tuple, dictionary, set, etc. Every object belongs to its class. For example - An integer variable belongs to integer class.
+
+Functions: 
+A function is a self-contained block of code that executes a specific task.
+
+def Multiply(x, y):
+   z= x*y
+   return(z)
+a = Multiply(4, 5)
+print(a)
+>> 20 
+
+
+Commenting: 
+# This is a comment => Max 72 words
+“””
+This is a comment 1. 
+This is a comment 2. 
+“””
+
+def f1():
+    a, b, c = 10, 20, 30 
+    print(f'Outer function variables: a is {a}, b is {b}, c is {c}')
+		def f2():
+		    a, b, c = 100, 200, 300 
+		    print(f'Inner function f2() variables: a is {a}, b is {b}, c is {c}')
+		 f2()
+f1()
+
+NameSpace: 
+* Built-In: Contains the names of all Python’s built-in objects. The Python interpreter creates the built-in namespace when it starts up, and they are available always when Python is running. You can list the objects in the built-in namespace with the command dir(__builtins__). This namespace remains in existence until the interpreter terminates.
+* Global: Contains any names defined in the main program or any module loaded with the import statement. This namespace terminates when the interpreter terminates.
+* Enclosing: Contains any names in the outer function of a nested function. This namespace terminates when the function terminates. In the example shown, the enclosed namespace is f1() because f2() is nested inside.
+* Local: Contains any names at the function level. This namespace terminates when the function terminates. In the example shown, the local namespace is f2() or if you had any function in your code that didn’t have a function nested inside, it would be considered local.
+
+
+Class: 
+Objects are an instance of a class. You can think of a class as a blueprint.
+Class variables: which can’t be changed without changing program: 
+class Cisco:
+     support = 'ciscosupport@cisco.com'
+
+The first argument in the __init__ method is self; this keyword can be anything you want it to be, but self is recommended. Self represents the instance of a class and allows the class to keep the different instances and the arguments that go with them separate. The code to create instance variables is as follows:
+class Cisco:
+    def __init__(self, hostname, ip, device_type, username, password):  
+         self.hostname = hostname  
+         self.conn_data = { 
+              'ip': ip, 
+              'device_type': device_type, 
+              'username': username, 
+              'password': password  
+             }
+  
+    def login(self):  
+         return netmiko.ConnectHandler(**self.conn_data)
+
+Using above code in two instances: 
+router1 = Cisco('csr1kv1', '10.10.10.1', 'cisco_ios', 'cisco1', 'cisco_pw_1')
+router2 = Cisco('csr1kv2', '10.10.10.2', 'cisco_ios', 'cisco2', 'cisco_pw_2')
+
+router1_conn = router1.login()
+router2_conn = router2.login()
+
+Using Inheritance to Extend functionality: 
+
+class CiscoIOSbase:
+    def __init__(self, ip, username=None, password=None):  
+         self.hostname = hostname  
+         self.conn_data = { 
+              'ip': ip, 
+              'device_type': device_type, 
+              'username': username, 
+              'password': password  
+             }
+  
+    def login(self):  
+         return netmiko.ConnectHandler(**self.conn_data)
+
+class CiscoIOSRouter(CiscoIOSbase):		<<=== This command makes a new class inherited from the cisco class.
+    “””Functions specific to IOS Router.”””
+
+# Because the __init__() function is not defined in the child class, it is inherited from the parent class. The child class also inherits the login() function and would inherit all other functions and attributes from the parent class.
+
+    def get_run(self):
+        return self.conn.send_command(‘show run’)
+
+    def get_log(self):
+        return self.conn.send_command(‘show log’)
+
+router1 = CiscoIOSRouter(’10.254.0.1’, username=‘cisco’, password=‘cisco’)
+router.login()
+print(router1.get_run())
+print(router1.get_log())
+
+The function super() enables you to call functions from a parent class (also called a superclass) in its child or sibling classes. This is useful when you want to change the way a function defined in the parent class behaves in a child class.
+
+super().__init__(ip, device_type='cisco_ios',
+                username='cisco', password='cisco')
+
+
+Main Construct: 
+Module.py
+def function1():
+    <statement…>
+def function2():
+    <statement…>
+
+if __name__ == “__main__”:
+    function1()
+    function2()
+
+Another program => Execute.py
+import module
+def function3():
+    << statement…>
+
+def main():
+    <statement>
+    <statement>
+    module.function1()
+    function3()
+
+if __name__ == ‘__main__’:
+    main()
+
+The __name__ (an internal variable) is a special built-in variable that shows the name of the current module. 
+__name__ = __main__ in Module.py
+__name__ = module in Execute.py when functions of Module.py are running
+
+main() should always be last function which has everything we want to run.
+
+
+
+Data Formats:
+A comma-separated values (CSV) file is a simple text file that contains data in a tabular format. While this format is very common, there has never been any formal documentation. This lack of consistency causes different vendors to implement CSV in different ways. 
+
+XML is not a programming language but a mark-up language, very similar to HTML, used to describe data. To access and modify XML documents, the World Wide Web Consortium developed an application programming interface (API) known as Document Object Module (DOM). DOM represents an XML document in a tree structure.
+
+<router> 
+    <interface>
+        <gi0/1>
+            <name>gi0/1</name>
+            <ip>192.168.5.1</ip>
+        </gi0/1>
+        <gi0/2>
+            <name>gi0/2</name>
+            <ip>192.168.5.2</ip>
+        </gi0/2>
+    </interface>
+</router>
+
+Root: There is only one root in a document. It is the first node and it encloses all other elements. The root is also known as a document element. In the example, the root element is <router>.
+Child: A child element belongs to only one parent. There can be multiple child elements under each parent. In the example, the child elements for <interface> are <gi0/1> and<gi0/2>. The elements of <name> and <ip> are also child elements with <gi0/1> and <gi0/2> are the parents.
+Sub-Child: Elements <name> and <ip> are sub-children of <interface>.
+Data: Data is the text between elements. In the example, “gi0/1” or “192.168.5.1” is data.
+Comments: Comments are text in an XML document that are not processed. Comments are used to provide information about the XML document. The format of an XML comment is <!--This is an XML doc for router interfaces-->.
+XML elements are known as tags. Tags are used to identify, store, and organize data. Each element has an opening and closing tag. The tags are case-sensitive and must match. The following are examples of correct and incorrect tagging:
+
+In networking, XML is used as a data format to exchange information. You will see XML used as the data encoding for application programming interfaces (APIs), Network Configuration Protocol (NETCONF), and Representational State Transfer Configuration Protocol (RESTCONF). NETCONF uses XML to encode the protocol messages and configuration data that are modeled by Yet Another Next Generation (YANG).
+
+JSON Data Format:
+JavaScript Object Notation (JSON) is based on a subset of the JavaScript Programming Language Standard ECMA-262 3rd Edition - December 1999.
+JSON is built on objects and arrays.
+An object is a set of unordered key/value pairs. An object begins with a ({) left brace and ends with a (}) right brace. Each key in the object is followed by a (:) colon and then the value. The key/value pairs are separated by a (,) comma except for the last key/value pair. All keys are strings surrounded by double quotes (" "). The value of the key can be strings surrounded by double quotes (" "), integers, floating points, Null, Boolean, objects, or arrays.
+An array is a collection of ordered values that begins with a ([) left bracket and ends with a (]) right bracket. Values are separated by a (,) comma.
+In JSON, whitespaces are insignificant and are only used to make the data easier for humans to read. The extension of a JSON file is .json.
+JSON format and Python dictionaries are similar in that they both have key:value pairs. This similarity makes it easy to convert from one to the other.
+
+YAML Data Format:
+YAML (YAML Ain’t Markup Language) is a data serialization language, commonly used for configuration files. YAML files can have an extension of .yaml (preferred) or .yml.
+
+Every YAML document begins with (---) three dashes.
+Most of a YAML document is made up of key/value pairs. The bounding box on line 4 of the example shows a pair where the key is name and the value is 1. Note that with YAML the keys do not have quotes around them and there are no delimiters at the end of each line.
+YAML relies on indentation for structure and the best practice is to use two whitespaces for each indention. The use of tabs is not allowed.
+Each new item in a list begins with a (–) hyphen and space. You can add comments to the file with the (#) pound symbol.
+The following is an example of how (#) and (-) are used in a list:
+# List of device names
+Routers:
+-	R1 
+-	R2 
+Switches:
+-	SW1 
+-	SW2 
+
+Databases: 
+Two types: 
+Relational: Eg: MySQL, Oracle, 
+Nonrelational (sometimes referred as NoSQL): Eg: MongoDB, Graph Engine, IngluxDB
+
+A relational database stores and provides access to data in a table. The data in a row in the database table is known as a record. Each row has a key, which is a unique id to distinguish between records. The columns of the table hold data for each record. A relational database is similar to an Excel spreadsheet. MySQL, PostgreSQL, and Oracle are all types of relational databases.
+Examples of relational databases include:
+* 		MySQL: MySQL is an open-source relational database acquired by Oracle Software.
+* 		PostgreSQL: PostgreSQL is an open-source object-relational database system instead of a pure relational database. Therefore, the data models can be either relational or object-oriented. Postgre is utilized for complex and varied data models.
+* 		Oracle: An Oracle database is a database designed for enterprise grid computing that implements object-oriented features.
+
+A nonrelational database is a database that does not use the rows and columns found in most traditional database systems. Nonrelational databases use a storage model that is for a specific type of data. For example, data may be stored as JSON documents or as a graph consisting of edges and vertices.
+Examples of nonrelational databases include:
+* 		MongoDB: MongoDB is a document datastore. Document datastores manage a set of named fields and object values referred to as a document. These databases store data in the form of JSON documents.
+* 		InfluxDB: InfluxDB is a time-series datastore. Time-series databases support a very high number of writes and collect large amounts of data in real time. Time-series data stores are best used for storing telemetry data and are used for IoT sensors or application/system counters.
+* 		Graph Engine: Graph Engine is a graph database. Graph databases manage nodes and edges. Nodes represent entities and edges specify the relationships between these entities. The purpose of a graph datastore is to allow an application to perform queries to efficiently analyze the relationships between entities.
+
+
+Reading Data from a Simple Text and CSV File 
+Can open file: 
+open(filename, mode) 
+or 
+with open("filename," mode) as f:			==> closes file automatically / read fn return file as individual strings making it easy to manipulate. 
+    content = f.open()
+    print(content)
+
+Mode: 
+r - Opens a file for read-only, returns an error if the file does not exist.
+a - Opens a file appending, creates the file if it does not exist.
+w - Opens a file for write, creates the file if it does not exist.
+x - Creates the specified file, returns an error if the file exists.
+
+print(f.read(7))		=> read only 7 bytes i.e Router1
+print(f.readline())		=> read only first line i.e line by line
+print(f.readlines()[1:2])	=> Example is to print second line
+
+Reading from a CSV File
+import csv
+with open(“devices.csv”, r) as f:
+	devices = csv.reader(f)
+	header = next(devices)
+	print(f’Headers: [header}’)
+	for row in devices:
+	    print(row)
+Above saves csv lines in list. If we want to save in dictionary.
+with open(“devices.csv”, r) as f:
+	devices = csv.DictReader(f)
+	for row in devices:
+	    print(row)
+	    print(row[‘Hostname’], row[‘Model’])
+	    print(‘————————‘)
+OR 
+            print(f'ASSET {row["ASSET#"]} Serial number: {row["ASSET_SERIAL#"]}')
+
+OR
+conn_info = pandas.read_csv('conn_info.csv')
+
+
+Writing Data to a Simple Text and CSV File 
+To write: file.write() or the file.writelines() method
+
+data = "Atul is a good boy. Pallavi is a bad girl.\n"
+with open("Textfiletoswrite.txt", "w") as f:		<=== w will create a file if not present and will rewrite from starting in old file if present.
+        f.write(data *20)
+
+with open("Textfiletoswrite.txt", “a”) as f:		<=== To append in a file
+        f.write(data *20)
+
+print() can be used to write in a file and it is more stronger than write function because of inbuilt additional functionalities. 
+
+To write from a list 
+data = ["switch1", "\n", "switch2","\n", "switch3"]
+with open("Textfiletoswrite.txt", "a") as f:    
+        f.writelines(data)
+        f.write('\n')
+
+To write in a CSV file: 
+import csv
+data = [["HName", "Number", "SN"], ["Switch1", "1", "werw"], ["switch2", "2", "dswr"]]
+
+with open("CSVfiletowrite.csv", "w") as f:
+    devices = csv.writer(f,quoting=csv.QUOTE_NONNUMERIC)
+    #The variable “f” is the file object of newdevices.csv and quoting tells the writer what you want quotes. QUOTE_NONNUMERIC means to put quotes around everything except numeric values.
+    for row in data:
+        devices.writerow(row)
+
+with open("CSVfiletowrite.csv", "r") as f:
+    print(f.read())
+
+
+import pandas, read data from a CSV file to a DataFrame, and print the DataFrame.
+import pandas 
+
+with open('router_info.csv') as csv_file: 
+    df = pandas.read_csv(csv_file) 
+print(df)
+print(df['ip']) 
+print(df.loc[[0]])
+
+This will create a csv format data using lists
+router_data = pandas.DataFrame() 
+router_data['hostname'] = router_list 
+router_data['version'] = version_list 
+print(router_data)
+
+To  create an actual new CSV, use:  router_data.to_csv('hostname_version.csv', index=False)
+
+Reading from XML: 
+import requests
+
+def get_interface_info(to_terminal=False)
+	api_root = 'https://10.254.0.1:443/restconf' 
+	dn = '/data/Cisco-IOS-XE-native:native/interface/'
+	response = requests.get(api_root + dn, 
+	    auth=('cisco', 'cisco'), 
+	    verify=False
+	)
+get_interface_info(to_terminal=True)
+
+Above program gets data in XML. 
+To manipulate XML data:
+import requests
+from bs4 import BeautifulSoup		==> The BeautifulSoup class uses an XML parsing module to interpret XML data and creates an object that has methods that help you work with XML data.
+
+def get_interface_info(to_terminal=False)
+	api_root = 'https://10.254.0.1:443/restconf' 
+	dn = '/data/Cisco-IOS-XE-native:native/interface/'
+	response = requests.get(api_root + dn, 
+	    auth=('cisco', 'cisco'), 
+	    verify=False
+	)
+xml_data=get_interface_info()
+soup = BeautifulSoup(xml_data, ‘lxml’)
+soup.prettify()
+or 
+print(soup.gigabitethernet)	==> it will show content of one gigabitethernet tag
+
+To find all: 
+for intf in soup.find_all(‘gigabitethernet’):
+	print(intf)
+	print(‘-‘ *50)
+
+To check name: 
+for intf in soup.find_all(‘gigabitethernet’):
+	print(intf.name + intf.find('name').string)
+	print(‘-‘ *50)
+
+Or 
+for intf in soup.find_all(‘gigabitethernet’):
+print('-' * 25)
+ip = intf.find('ip')
+if ip:
+    print('GigabitEthernet', intf.find('name').string)  
+    print(intf.ip.primary.address)
+
+
+How to read JSON file
+import json
+from pprint import pprint
+
+with open(‘Jsonfilename’, ‘r’) as f:
+    ip = json.load(f)		==> deserialize json and returns as a python object
+pprint(ip)
+
+The pprint() prints data structures in a well-formatted way. Can define parameters also: 
+pprint(object, indent=1, width=80, depth=None)
+
+json.loads() does not decode a JSON file to a Python object like json.load(), but instead decodes a JSON string to a Python object.
+
+Writing data to a JSON Text file:
+
+import json
+from pprint import pprint
+
+json_data=[
+	{
+		‘name’:  ‘router1’
+		‘id’: ‘2’
+		‘ip’: ‘1.1.1.1’
+	}, {
+		‘name’:  ‘router2’
+		‘id’: ‘2’
+		‘ip’: ‘1.1.1.2’	
+	}
+]
+
+with open ('newjsonfile.json', 'w') as f:
+	json.dump(json_data, f, indent=2)
+
+with open ('newjsonfile.json', ‘r’) as f: 
+	pprint(json.load(f), width=40)
+
+
+
+Work on raw data: / Config change or so: 
+import re
+import netmiko
+
+csr = netmiko.ConnectHandler('10.254.0.1', username='cisco',
+   password='cisco', device_type='cisco_ios')
+running_config = csr.send_command('show run')
+print(running_config)
+
+pattern = r'interface GigabitEthernet1\n.+'
+repl = 'interface GigabitEthernet1\n ip address 10.11.0.1 255.255.255.0'
+updated_config = re.sub(pattern, repl, running_config)
+print(updated_config)
+
+
+Python Standard Library Modules:
+>>> help("modules")		=> to see list of libraries
+which directory that Python checks for the standard library:
+>>> import sys
+>>> sys.path
+
+
+Some Standard modules: 
+Date and Time: Supplies classes for output formatting and manipulating dates and times.
+datetime: Allows for manipulation of date and times
+calendar: Provides useful functions related to a calendar
+
+Mathematical: Provides numeric and math-related functions and data types.
+math: Mathematical functions
+Random: Generates pseudo-random numbers
+
+File System: Provides an interface to files and file structure on the operating system.
+os.path: Allows for pathname manipulation
+filecmp: Compares files and functions
+
+Operating System: Provides interfaces to operating system features available on almost all operating systems, such as io, logging, and a clock.
+os: Allows you to use operating system-dependent functionality
+logging: Logging system for applications and libraries
+
+Read/Write Data Formats: Reads and writes to data formats such as XML and JSON.
+json: Reads and writes json data
+base64: Encodes and decodes binary data
+
+Internet Protocol: Supports Internet protocols and related technology such as FTP, HTTP, and SMTP.
+urllib: Opens, reads, parses URLs
+ftplib: Implements client-side FTP protocol
+
+Multimedia Data: Provides various algorithms or interfaces that are mainly useful for multimedia applications such as sound and video.
+wave: Interface to read and write WAV sounds
+imghdr: Determines the type of image contained in a file
+
+Run time: Provides services related to the Python interpreter and its interaction with its environment.
+sys: Provides access to some variables used by the interpreter
+traceback: Extracts, formats, and prints stack traces
+
+
+
+Reusable Code with Modules and Packages 
+
+https://pypi.org
+https://developer.cisco.com/codeexchange/
+
+To download package: 
+python -m pip install "package name"
+
+/usr/bin/python3 -m pip install --upgrade pip
+
+To check location of packages installed: 
+>>> import site
+>>> site.getsitepackages()
+['/usr/local/Cellar/python@3.9/3.9.5/Frameworks/Python.framework/Versions/3.9/lib/python3.9/site-packages']
+
+>> pip3 list
+Package    Version
+---------- -------
+Library    0.0.0
+pip        21.1.1
+setuptools 56.0.0
+wheel      0.36.2
+
+Virtual environments are not covered in this course, but you can learn more about them at https://docs.python.org/3/tutorial/venv.html
+
+Difference between package and module: 
+Packages are organized collection of modules and it has init.py or init dunder.py
+
+Program to filter IP addresses from interface with show ip arp. 
+from netmiko import ConnectHandler
+import pandas as pd
+
+def get_router_output(ip, username=None, password=None, port=22,
+	device_type=None, command=None, use_textfsm=True):
+	conn = ConnectHandler(
+	ip,
+	username = username,
+	password=password,
+	port=port,
+	device_type=device_type
+	)
+return conn.send_command(command, use_textfsm=True)
+
+sh_ip_arp= get_router_output(
+	'10.254.0.1',
+	username='cisco',
+	password='cisco',
+	port=22,
+	device_type='cisco_ios',
+	command='sh ip arp'
+	)
+#print(sh_ip_arp)
+
+df = pd.DataFrame(sh_ip_arp)
+interface_names=df['interface'].unique()
+print(interface_names)
+
+for interface in interface_names:
+	print(interface)
+	print(df['address'].loc[df['interface']==interface].values)
+	print('-'*80)
+
+========
+Output
+
+GigabitEthernet1
+['10.1.1.34' , '10.1.1.23]
+GigabitEthernet2
+['10.4.4.21', '10.4.4.34]
+
+Encrypt password: 
+import privy
+encrypted_pw = privy.hide(b'password', b'decrypt')
+print(encrypted_pw) => gives encrypted password
+print(privy.peek(encrypted_pw, b'decrypt’)).  => print b’password’
+print(privy.peek(encrypted_pw, b'decrypt').decode('utf-8’)).  ===> print password
+
+
+Command-Line Arguments:
+import sys
+>>> print(f'Argument List: {sys.argv}')		==> list of arguements and file name
+>>>Argument List: ['PRNE_ARG.py', 'Test1', 'Test2', 'Test3']
+>>>arg_list = sys.argv[1:]			==> To get arguement list without filename as index starts from 1
+>>>[‘Test1', 'Test2', 'Test3']
+>>>print(f'Number of arguments: {len(sys.argv)}')		==> prints the length of list and present number
+>>> 4
+
+Argparse:
+
+PRNE_ARGPARSE.py
+import argparse
+text = 'This program takes input for router information.'
+parser = argparse.ArgumentParser(description=text)
+parser.add_argument("-R", "--router", help=" Enter router name")
+parser.add_argument("-IP", help=" Enter ip address")
+“””
+parser.add_argument(short_option, long_option, help, action)
+* 		Short option: Short representation of the argument that follows.
+* 		Long option: Long representation of the argument that follows.
+* 		Help: Message that will be displayed to help the user understand the argument.
+* 		Action: If action is set to "store_true," the argument is optional. Otherwise, it will be blank.
+“””
+router = parser.parse_args()
+print(f'Router name is {router.router} IP is {router.IP}')
+		
+python PRNE_ARGPARSE.py -h 
+usage: PRNE_ARGPARSE.py [-h] [-R ROUTER] [-IP IP]
+
+ATCHOUDH-M-L7KY:Python atchoudh$ python3 PRNE_ARGPARSE.py -R router1 -IP 192.168.5.5
+Router name is router1 IP is 192.168.5.5
+
+
+Errors and Exceptions:
+
+AttributeError: An attribute reference assignment fails.
+IOError: A system-related error, including I/O failures such as “file not found” or “disk full.”
+ImportError: An import statement fails to load a module.
+IndexError: A sequence subscript is out of range.
+KeyError: A mapping (dictionary) key is not found in the set of existing keys.
+KeyboardInterrupt: A user hit the interrupt key (normally Control-C or Delete).
+NameError: A local or global name is not found.
+OverflowError: The result of an arithmetic operation is too large to be represented.
+OSError: A function returns a system-related error.
+TypeError: An operation or function is applied to an object of inappropriate type.
+ValueError: A built-in operation or function receives an argument that has the right type but an inappropriate value, and the situation is not described by a more precise exception such as IndexError.
+ZeroDivisionError: The second argument of a division or modulo operation is zero.
+
+
+Managing Exceptions:
+Try-Except-Else:
+Try-Except-Else-Finally:
+
+Try-Except-Else:
+try: 
+	<Script to try>
+except <exception type>:
+	Code to run if specific exception is raised.
+else:
+	Code to run if no exceptions are raised.
+===================
+device = {'1': 'R1', '2': 'R2', '3': 'R3', '4': 'R4'}
+try: 
+    device['1']
+except: 		OR except KeyError:
+    print('Device deosn\'t exist')
+===================
+
+Try-Except-Else-Finally
+try: 
+	<Script to try>
+except <exception type> as e:
+	Code to run if specific exception is raised.
+	Var e contains exception message.
+else:
+	Code to run if no exceptions are raised.
+finally: Code that will always run at the end of exception handling. 
+
+===================
+x=1
+y=0
+try: 
+    z=x/y
+except ZeroDivisionError as e: 
+    print(e)
+===================
+
+import sys
+import netmiko
+from netmiko import NetmikoAuthenticationException as Authfail
+
+try: 
+    conn=netmiko.ConnectHandler (
+        '10.254.0.1', username='cisco', 
+        password='cisco', device_type='cisco_ios'
+        )
+except Authfail as e: 
+    output = e
+    sys.exit()
+
+else:
+    output=conn.send_command('show running-config')
+finally: 
+    print(output)
+
+Sometimes we need to make our own exceptions: 
+import requests
+
+ip = 'https://python.org/'
+dn = 'about/'
+auth=('cisco', 'cisco')
+dash = '- *80'
+
+try: 
+    response = requests.get(ip+dn) 
+    # For network device response = requests.get(ip+dn, auth headers=headers, verify=False
+    response.raise_for_status()
+#Above will raise HTTP Exception if code is not 200
+#Below will catch that exception. 
+except requests.HTTPError as e:
+    filename='errors.log'
+    data = e
+else: 
+    filename='success.log'
+    data = response.content 
+finally: 
+    with open('filename', 'a') as f: 
+        print(data, dash, sep='\n', file=f)
+
+
+Assertions:
+used for debugging unrecoverable errors
+assert <condition>,<error message>
+The condition is a Boolean expression that is tested. If the condition is true, the program continues, but if the condition is false, assert stops the program and returns an AssertionError.
+
+import requests
+
+ip = ‘https://10.254.0.1:443/'
+dn = ‘restconf/data/Cisco-IOS-XE-native/interface/‘
+auth = (‘cisco’ , ’isco’)
+
+response = requests.get(ip+dn, auth=auth, verify=False)
+assertion_message=f’{response.status_code} {response.reason}’
+assert  response.status_code == 200, assertion_message
+print(response.content)
+
+>>> Traceback (……..)
+	AssertionError: 401 Unauthorized
+
+The assert statement condition states that the status code of the response must be 200, meaning successful, otherwise an AssertionError will be raised.
+
+
+import re
+import netmiko 
+
+ip_pattern = re.compile(r’(?:(?:25[0-5]|2[0-4][0-9]|1?[0-9]?[0-9])\.){3}’
+						r’(?:25[0-5]|2[0-4][0-9]|1?[0-9]?[0-9])’)
+
+def validate_ip(s)
+	if ip_pattern.match(s):
+		True
+	False
+def connect(ip, username, password)
+	assert validate_ip(ip), ‘Invalid IP Address’
+	return netmiko.ConnectHandler(ip, username=username, password=password, device_type=‘cisco_ios’)
+def get_data(conn, command)
+	router_output=conn.send_command(command)
+	assert ‘Invalid input’ not in router_output, ‘Invalid command, please check’ + command
+	assert len(router_output) >0, ‘No output, please check command’+command
+	return (router_output) 
+
+csr = connect(’10.254.0.1’, ‘cisco’, ‘cisco’)
+print(get_data(csr, ‘show run | i hostname’))
+
+hostname csr1kv1
+It will capture exception of wrong command  or wrong keyword after | i 
+
+Debugging: 
+
+Code Debugging Process 
+
+while program is not fully correct: 
+	Identify Error => Identify Source => Identify Cause => Fix and Validate 
+
+Internal tools: 
+print(), Assertion, break, 
+Importable: (modules)
+sys.exit(), logging, pdb, 
+
+IDE: 
+
+
+Where to get help? 
+Google, stackoverflow,
+
+Python Debugging Functions: 
+Print <Print and see output of current variable>
+import requests
+ip = ‘https://10.254.0.1:443/'
+headers={‘Accept’: ‘application/yang-data/json’}
+dn = ‘restconf/data/Cisco-IOS-XE-native/interface/‘
+auth = (‘cisco’ , ’cisco’)
+response = requests.get(ip+dn, headers=headers, auth=auth, verify=False)
+
+print(response.status_code) ==> to check what code we received back. 200 is good and 300, 400, 500 range is some error
+print(response.reason)
+print(response.content) => to see content of response
+
+We can type above in interactive CLI also to get realtime result. 
+
+Assert <We have seen examples before. 
+
+Break
+sys.exit()
+
+import subprocess
+import sys
+count=0
+while True: 
+    if count > 2:
+        sys.exit('ping to 127.0.0.1 failed')
+        #or print('ping to 127.0.0.1 failed')
+        #break
+    p = subprocess.Popen('ping 127.0.0.2 -c 1', shell=True)
+    p.wait()
+    if p.poll() == 0: ===> We can check this value of successful command using echo$?
+        print('Ping to 127.0.0.1 successful')
+        break
+    else:
+        pass
+    count+=1
+
+Logging: 
+import Logging
+import netmiko 
+
+logging.basicConfig(
+    file='mylog.txt',
+    format = f"%(asctime)s \n%(levelname)s: %(message)s \n{'-'*80}",
+    datefmt='%x %X %Z',
+    level=logging.INFO
+)
+
+
+import netmiko
+
+ip_list = ['10.254.0.1', '10.254.0.2', '10.254.0.3', '10.254.0.4']
+for ip in ip_list: 
+    try: 
+        conn = netmiko.ConnectHandler(ip, username='cisco', 
+            password='cisco', device_type='cisco_ios'
+            )
+    except netmiko.NetmikoTimeoutException:
+        log_message= f'{ip} - Timeout Check IP, TCP, PORT etc please'
+        logging.error(log_message)
+    else: 
+        logging.info('Connection established to %s', ip)
+        print(conn.send_command('show run'))
+
+
+PDB: 
+help pdb
+Pdb allows you to run the code line by line, set breakpoints, inspect variable values, and alter the execution of your program without changing the source code
+Invoke the debugger while running script: 
+python -m pdb <name of script>
+
+Interactive Command line: 
+import pdb
+pdb.run ('script name')
+
+The third way to use Pdb is inside your script by using the function breakpoint(). 
+i=1
+while True:
+	i+=1
+	print(i)
+	breakpoint()		Before 3.7 use import pdb; pdb.set_trace()
+	print(‘Program will not print this command because it will run till breakpoint and expects you to enter next command)
+
+Some of the most common pdb commands are as follows:
+* 		c – Continue: Executes the program normally until it hits another breakpoint. If there is no breakpoint set, the script stops at the end of the program displaying the output.
+* 		s – Step Forward: Executes one line of code at a time. At the end of each line of code executed, you are presented with the (Pdb) prompt waiting for another command. This command steps into a function which allows you to debug not only the lines of code in your main program, but each line of code in the function.
+* 		n – Next: Executes one line of code at a time. At the end of each line of code executed, you are presented with the (Pdb) prompt waiting for another command. Unlike step, next does step into a function. This means when you come to a function in your code, the code inside the function will execute, but you will not be able to debug it.
+* 		b – Breakpoint: Is a point in your code where you want to stop executing. You would normally place breakpoints in a location above where you want to start debugging. You can check variables at that point in the code or start stepping through the code line by line. You can use the command clear to remove all breakpoints or clear <number> to remove a specific breakpoint.
+* 		p/pp – Print/Pretty Print: Allows you to print information such as the value of a variable. If you want to know the value of variable num, you can use the command p x or print x at the point where you want to check the value.
+* 		! – Execute Statement: Allows you to execute any Python statement at a specific point in the code. For example, if you wanted to change the value of a variable, you could use !x = 10. This would set the variable x to a value of 10 at that point in the code.
+* 		l – List source: Prints the source code at a specific execution point. The current line appears in the middle of the printout with an arrow that points to it. There are three lines of code printed before and after the current line.
+* 		w – Print Stack: Displays the entire program at a specific point.
+* 		q – quit: Quits pdb. You can also use crtl +d or exit() to quit.
+
+
+
+
+
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+Terraform: 
+Used for developing infrastructure with the help of coding structures
+helps to have control over orchestration like puppet and ansible.
+Manages cloud like Azure, Google cloud, AWS.
+ 
+Why in Devops?
+Helps to do orchestration and not only configuration management
+It can manage configuration of dynamic infrastructure.
+Easily portable from one provider to another
+Easy installation.
+Master less and client only.
+
+Terraform Init:
+Initializes the code using command “terraform init”
+This command is used to initialize working directory which contains Terraform configuration file
+ 
+Terraform  is for Provisioning, managing and configuring tool. New and advanced. 
+
+Need to develop more server. 
+For example EC2 server. 
+
+Replicate identical infrastructure. 
+
+How it works:
+Two components:
+
+Core: Take two inputs:
+TF-Config: What needs to. be done?
+State: What is the current state
+
+Execution Plan: What needs to be done/ updated or destroyed? 
+
+It takes declarative approach where you define next state requirement. 
+
+How it takes action? States:
+
+refresh: gets current state from provider
+plan: create an execution plan. determines what steps are necessary to reach to. new desired state.
+Apply: execute the plan
+Destroy: Destroy whole setup and clean up everything. 
+ 
+
+
+
+
+Providers provides access to terraform. 
+AWS Azure, Kubrneters, PAAS, SAAS.
+
+
+
+
+Ansible is mainly a configuration tool. Ansible is mature
+
+
+Youtube:
+System Design by Gaurav Sen
+TCP/IP
+Udemy: 
+Python Durga
+
+
+CCNA: Keith Bogard 
+
+Glassdoor interview questions
+
+
+
+
+
+
+
