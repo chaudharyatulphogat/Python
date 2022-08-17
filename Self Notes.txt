@@ -1,13 +1,11 @@
 Devnets: 
 
-
 https://developer.cisco.com/learning/lab/dev-mac/step/10
 
 https://developer.cisco.com/video/net-prog-basics/01-programming_fundamentals
 https://github.com/CiscoDevNet/netprog_basics
 
 https://developer.cisco.com/video/net-prog-basics/00-intro
-
 
 
 https://acloudguru.com/
