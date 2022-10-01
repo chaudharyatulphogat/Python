@@ -1,5 +1,5 @@
 # Read text file:
-
+"""
 #Below code will read file and print all. 
 '''
 f=open("Textfiletoread.rtf", "r")
@@ -38,4 +38,22 @@ with open('CSVtoreadAsset.csv', 'r') as f:
         #print(row)
         print(f'ASSET {row["ASSET#"]} Serial number: {row["ASSET_SERIAL#"]}')
 
+"""
 
+
+import csv
+import pandas as pd
+
+'''
+with open('CSVtoreadAsset.csv', 'r') as f:
+    csvcontent=csv.DictReader(f)
+    header=csvcontent.fieldnames
+    print(header[5])
+    for row in csvcontent:
+        print(row)
+'''
+
+csvcontent=pd.read_csv('CSVtoreadAsset.csv')
+print (csvcontent)
+ASSET_tags=csvcontent['ASSET#'].tolist()
+print(ASSET_tags)
