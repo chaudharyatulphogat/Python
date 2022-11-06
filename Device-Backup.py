@@ -19,7 +19,7 @@ print(f'Running config to be collected of IPs: {ip_list} \n........')
 
 for ip in ip_list:
     try: 
-        conn = netmiko.ConnectHandler(ip, username='ricky', password='F3b_2o12', device_type='cisco_ios')
+        conn = netmiko.ConnectHandler(ip, username='backup', password='B1l@ckDaug', device_type='cisco_ios')
     except netmiko.NetmikoTimeoutException:
         log_message=f'{ip} Check IP, TCP, PORT, Connection'
         logging.error(log_message)
